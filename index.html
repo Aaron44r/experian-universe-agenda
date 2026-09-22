@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A GitHub Universe 2026 agenda tailored for an Experian Consumer Services engineer.">
   <title>Experian Consumer Services Agenda</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root {
       color-scheme: dark;
@@ -236,6 +237,152 @@
       text-align: center;
     }
 
+    .happy-hours {
+      margin-top: 34px;
+      padding-top: 30px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-heading {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-heading h2 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 34px);
+      letter-spacing: -0.025em;
+    }
+
+    .section-heading p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .flow {
+      margin: 16px 0;
+      padding: 15px 17px;
+      border: 1px solid rgba(63, 185, 80, 0.42);
+      border-radius: 11px;
+      background: rgba(63, 185, 80, 0.08);
+    }
+
+    .flow strong { color: var(--green); }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.25fr) minmax(320px, 0.75fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    #happy-hour-map {
+      min-height: 530px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .venue-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .venue {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--surface);
+    }
+
+    .venue-number {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #06111d;
+      font-weight: 800;
+    }
+
+    .venue h3 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .venue-meta {
+      margin: 3px 0 7px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .venue p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .venue-address {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .venue-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .venue-link:hover { text-decoration: underline; }
+
+    .map-marker {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      background: #0969da;
+      color: #ffffff;
+      font: 800 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .map-note {
+      margin: 12px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: #ffffff;
+      color: #1f2328;
+    }
+
+    .leaflet-popup-content {
+      margin: 12px 14px;
+      line-height: 1.4;
+    }
+
     footer {
       margin-top: 24px;
       padding-top: 18px;
@@ -249,6 +396,8 @@
       .hero { padding: 22px; }
       .session { grid-template-columns: 1fr; gap: 10px; }
       .toolbar { top: -1px; }
+      .map-layout { grid-template-columns: 1fr; }
+      #happy-hour-map { min-height: 420px; }
     }
   </style>
 </head>
@@ -282,11 +431,88 @@
     <p class="results" id="results"></p>
     <section class="agenda" id="agenda" aria-live="polite"></section>
 
+    <section class="happy-hours" id="happy-hours">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">Wednesday evening | October 28</div>
+          <h2>Happy hour recommendations</h2>
+          <p>Five nearby partner events from the FSI cohort itinerary, mapped relative to GitHub Universe at Fort Mason.</p>
+        </div>
+      </div>
+
+      <div class="flow">
+        <strong>Recommended flow:</strong> Begin with the Faros reception at Radhaus from 5:00-7:00 PM, then optionally continue to Xebia's Broad Street Oyster Bash from 6:00-9:00 PM.
+      </div>
+
+      <div class="map-layout">
+        <div id="happy-hour-map" role="region" aria-label="Map of happy hour venues near GitHub Universe"></div>
+        <div class="venue-list">
+          <article class="venue">
+            <span class="venue-number">1</span>
+            <div>
+              <h3>Faros happy hour at Radhaus</h3>
+              <div class="venue-meta">5:00-7:00 PM | Recommended starting point | On campus</div>
+              <p>AI economics and engineering leadership at the primary Fort Mason gathering point.</p>
+              <span class="venue-address">2 Marina Blvd, Building A, San Francisco</span>
+              <a class="venue-link" href="https://www.google.com/maps/search/?api=1&query=Radhaus%20Fort%20Mason%20San%20Francisco" target="_blank" rel="noreferrer">Open directions</a>
+            </div>
+          </article>
+
+          <article class="venue">
+            <span class="venue-number">2</span>
+            <div>
+              <h3>Xebia's Broad Street Oyster Bash</h3>
+              <div class="venue-meta">6:00-9:00 PM | Optional second stop | About 0.5 mile east</div>
+              <p>AI, modernization, productivity, and security at Broad Street Oyster Co.</p>
+              <span class="venue-address">900 North Point St, Suite K201, San Francisco</span>
+              <a class="venue-link" href="https://www.google.com/maps/search/?api=1&query=Broad%20Street%20Oyster%20Co%20San%20Francisco" target="_blank" rel="noreferrer">Open directions</a>
+            </div>
+          </article>
+
+          <article class="venue">
+            <span class="venue-number">3</span>
+            <div>
+              <h3>Slalom AI in Motion</h3>
+              <div class="venue-meta">5:30-7:30 PM | Nearby alternative | About 0.5 mile east</div>
+              <p>AI strategy, measurable impact, and executive networking at Culinary Artistas.</p>
+              <span class="venue-address">851 Beach St, San Francisco</span>
+              <a class="venue-link" href="https://www.google.com/maps/search/?api=1&query=Culinary%20Artistas%20San%20Francisco" target="_blank" rel="noreferrer">Open directions</a>
+            </div>
+          </article>
+
+          <article class="venue">
+            <span class="venue-number">4</span>
+            <div>
+              <h3>Cloudsmith DevOps on Draft</h3>
+              <div class="venue-meta">6:00-9:00 PM | Nearby alternative | About 0.5 mile east</div>
+              <p>DevOps, software supply chain, security, and informal networking at SF Brewing Co.</p>
+              <span class="venue-address">3150 Polk St, San Francisco</span>
+              <a class="venue-link" href="https://www.google.com/maps/search/?api=1&query=San%20Francisco%20Brewing%20Co" target="_blank" rel="noreferrer">Open directions</a>
+            </div>
+          </article>
+
+          <article class="venue">
+            <span class="venue-number">5</span>
+            <div>
+              <h3>Insight happy hour at Bar Darling</h3>
+              <div class="venue-meta">6:00-9:00 PM | Nearby alternative | About 0.6 mile southwest</div>
+              <p>Cocktails and conversation with technology leaders and GitHub experts.</p>
+              <span class="venue-address">2263 Chestnut St, San Francisco</span>
+              <a class="venue-link" href="https://www.google.com/maps/search/?api=1&query=Bar%20Darling%202263%20Chestnut%20Street%20San%20Francisco" target="_blank" rel="noreferrer">Open directions</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <p class="map-note">Each event requires a separate RSVP and capacity may be limited. Distances are approximate proximity from Fort Mason rather than measured walking routes; use live navigation for accessible and real-time directions. The source document did not include RSVP links, and event details may change.</p>
+    </section>
+
     <footer>
-      Times are Pacific Daylight Time. Session details were retrieved from the official GitHub Universe attendee catalog on September 22, 2026. Session titles link to the official catalog.
+      Times are Pacific Daylight Time. Session details were retrieved from the official GitHub Universe attendee catalog on September 22, 2026. Happy hour recommendations are based on the Universe FSI Cohort Itinerary; venue addresses were verified separately for mapping. Session titles link to the official catalog.
     </footer>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const sessions = [
       ["wed", "Wed, Oct 28", "9:00-9:45 AM", "Opening Keynote", "Roadmap", true, "Establishes the product and roadmap context for Copilot agents, Actions, security, and enterprise controls. Track GA versus preview announcements because Experian restricts preview features.", "1786370222106001jLNQ"],
@@ -400,6 +626,36 @@
       state.query = search.value;
       render();
     });
+
+    const happyHourVenues = [
+      { number: 1, name: "Faros happy hour at Radhaus", time: "5:00-7:00 PM", position: [37.8068860, -122.4322073] },
+      { number: 2, name: "Xebia's Broad Street Oyster Bash", time: "6:00-9:00 PM", position: [37.8058477, -122.4229027] },
+      { number: 3, name: "Slalom AI in Motion", time: "5:30-7:30 PM", position: [37.8061975, -122.4230705] },
+      { number: 4, name: "Cloudsmith DevOps on Draft", time: "6:00-9:00 PM", position: [37.8057746, -122.4236489] },
+      { number: 5, name: "Insight happy hour at Bar Darling", time: "6:00-9:00 PM", position: [37.8001729, -122.4405522] }
+    ];
+
+    const map = L.map("happy-hour-map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const bounds = [];
+    happyHourVenues.forEach((venue) => {
+      const icon = L.divIcon({
+        className: "",
+        html: `<span class="map-marker">${venue.number}</span>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -15]
+      });
+      L.marker(venue.position, { icon })
+        .addTo(map)
+        .bindPopup(`<strong>${venue.name}</strong><br>${venue.time}`);
+      bounds.push(venue.position);
+    });
+    map.fitBounds(bounds, { padding: [34, 34] });
 
     render();
   </script>
